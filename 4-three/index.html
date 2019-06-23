@@ -1,0 +1,56 @@
+<html>
+  <head>
+    <title>My first three.js app</title>
+    <style>
+      body { margin: 0; }
+      canvas { width: 100%; height: 100% }
+    </style>
+  </head>
+  <body>
+    <script src="js/three.js"></script>
+    <script src="js/orbitcontrols.js"></script>
+    <script>
+      var scene = new THREE.Scene();
+      var camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
+      var controls = new THREE.OrbitControls(camera);
+      var renderer = new THREE.WebGLRenderer();
+      renderer.physicallyCorrectLights = true;
+      renderer.setSize( window.innerWidth, window.innerHeight );
+      document.body.appendChild( renderer.domElement );
+
+      var geometry = new THREE.SphereGeometry(1, 30, 30);
+      var material = new THREE.MeshBasicMaterial({color: 0x00ff00, wireframe:true});
+
+      const loader = new THREE.TextureLoader();
+      const texture = loader.load('img/moon.jpg');
+      const materialMoon = new THREE.MeshStandardMaterial({
+        map: texture});
+      var sphere = new THREE.Mesh( geometry, materialMoon );
+      scene.add( sphere );
+      //const directionalLight = new THREE.DirectionalLight(0xFFFFFF);
+      //directionalLight.position.set(1, 1, 1);
+      //scene.add(directionalLight);
+      //const light = new THREE.AmbientLight(0xFFFFFF, 1.0);
+      //scene.add(light);
+      const light = new THREE.PointLight(0xffffff, 20, 50, 1.0);
+      light.position.set( 3, 3, 3 );
+      scene.add( light );
+      const lightHelper = new THREE.PointLightHelper(light);
+      scene.add(lightHelper);
+
+      camera.position.z = 5;
+
+      var animate = function () {
+        requestAnimationFrame( animate );
+
+        //sphere.rotation.x += 0.01;
+        sphere.rotation.y += 0.001;
+        //sphere.geometry = new THREE.SphereGeometry(sphere.rotation.y, 10, 10);
+
+        renderer.render( scene, camera );
+      };
+
+      animate();
+    </script>
+  </body>
+</html>
