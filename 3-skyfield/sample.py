@@ -3,8 +3,11 @@ import math
 from skyfield.api import load
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
+import mpl_toolkits.mplot3d.art3d as art3d
+from matplotlib.patches import Circle
+from matplotlib import animation
 
-def sincos(p1, p2):
+def sincos(planets, p1, p2):
     pla1, pla2 = planets[p1], planets[p2]
     ts = load.timescale()
     t = ts.now()
@@ -17,7 +20,7 @@ def sincos(p1, p2):
     print(x)
     print(y)
 
-    #x = distance.au * math.cos(dec.radians)
+    r = distance.au * math.cos(dec.radians)
     z = distance.au * math.sin(dec.radians)
     #print(x)
     print(z)
@@ -31,34 +34,54 @@ def sincos(p1, p2):
     #print('')
     #print(distance)
     print('')
-    return [x, y, z]
+    return [x, y, z, r]
 
-planets = load('de421.bsp')
-print(planets)
-ret = [[0.0, 0.0, 0.0]]
-ret.append(sincos('sun', 'mercury'))
-ret.append(sincos('sun', 'venus'))
-ret.append(sincos('sun', 'earth'))
-ret.append(sincos('sun', 'mars'))
-ret.append(sincos('sun', 'JUPITER BARYCENTER'))
-ret.append(sincos('sun', 'SATURN BARYCENTER'))
-#ret.append(sincos('sun', 'URANUS BARYCENTER'))
-#ret.append(sincos('sun', 'NEPTUNE BARYCENTER'))
-x = [x[0] for x in ret]
-y = [x[1] for x in ret]
-z = [x[2] for x in ret]
-print(x)
-print(y)
-print(z)
-hosei = 10.0
-fig = plt.figure()
-ax = fig.add_subplot(111, projection='3d')
-ax.scatter(x, y, z, c=['red', 'blue', 'yellow', 'cyan', 'magenta', 'green', 'green'])
-ax.legend()
-ax.set_xlim(-1.0 * hosei, hosei)
-ax.set_ylim(-1.0 * hosei, hosei)
-ax.set_zlim(-1.0 * hosei, hosei)
-ax.set_xlabel('X')
-ax.set_ylabel('Y')
-ax.set_zlabel('Z')
+def createMap():
+    planets = load('de421.bsp')
+    #print(planets)
+    ret = [[0.0, 0.0, 0.0, 0.0]]
+    ret.append(sincos(planets, 'sun', 'mercury'))
+    ret.append(sincos(planets, 'sun', 'venus'))
+    ret.append(sincos(planets, 'sun', 'earth'))
+    ret.append(sincos(planets, 'sun', 'mars'))
+    #ret.append(sincos(planets, 'sun', 'JUPITER BARYCENTER'))
+    #ret.append(sincos(planets, 'sun', 'SATURN BARYCENTER'))
+    #ret.append(sincos(planets, 'sun', 'URANUS BARYCENTER'))
+    #ret.append(sincos(planets, 'sun', 'NEPTUNE BARYCENTER'))
+    x = [x[0] for x in ret]
+    y = [x[1] for x in ret]
+    z = [x[2] for x in ret]
+    r = [x[3] for x in ret]
+    c = ['red', 'blue', 'yellow', 'cyan', 'magenta', 'green', 'green']
+    c = c[:len(x)]
+    print(x)
+    print(y)
+    print(z)
+    print(c)
+    return x, y, z, r, c
+
+def figmap(fig):
+    plt.cla()
+    ax = fig.add_subplot(111, projection='3d')
+    ax.legend()
+    hosei = 3.0
+    ax.set_xlim(-1.0 * hosei, hosei)
+    ax.set_ylim(-1.0 * hosei, hosei)
+    ax.set_zlim(-1.0 * hosei, hosei)
+    x, y, z, r, c = createMap()
+    ite = ax.scatter(x, y, z, c=c)
+    i = 0
+    for rr in r:
+        q=Circle((0, 0), rr, ec=c[i], fill=False)
+        ax.add_patch(q)
+        art3d.pathpatch_2d_to_3d(q, z=0, zdir="z")
+        i += 1
+    ax.set_xlabel('X')
+    ax.set_ylabel('Y')
+    ax.set_zlabel('Z')
+    return ite
+
+fig = plt.figure(figsize=(10,10))
+figmap(fig)
+#ani = animation.FuncAnimation(fig, figmap, fargs=('a'), interval=300, blit=True)
 plt.show()
