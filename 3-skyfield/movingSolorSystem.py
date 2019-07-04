@@ -8,10 +8,8 @@ from mpl_toolkits.mplot3d import Axes3D
 import mpl_toolkits.mplot3d.art3d as art3d
 from matplotlib.patches import Circle
 
-def sincos(planets, p1, p2):
+def sincos(planets, p1, p2, t):
     pla1, pla2 = planets[p1], planets[p2]
-    ts = load.timescale()
-    t = ts.now()
     astrometric = pla1.at(t).observe(pla2)
     ra, dec, distance = astrometric.radec()
     x = distance.au * math.cos(ra.radians)
@@ -27,21 +25,20 @@ def sincos(planets, p1, p2):
     #print('赤緯：天体と天の赤道の間の角度の隔たりを表す')
     #print('')
     #print(distance)
-    print('')
     return [x, y, z, r]
 
-def createMap():
+def createMap(t):
     planets = load('de421.bsp')
     #print(planets)
     ret = [[0.0, 0.0, 0.0, 0.0]]
-    ret.append(sincos(planets, 'sun', 'mercury'))
-    ret.append(sincos(planets, 'sun', 'venus'))
-    ret.append(sincos(planets, 'sun', 'earth'))
-    ret.append(sincos(planets, 'sun', 'mars'))
-    #ret.append(sincos(planets, 'sun', 'JUPITER BARYCENTER'))
-    #ret.append(sincos(planets, 'sun', 'SATURN BARYCENTER'))
-    #ret.append(sincos(planets, 'sun', 'URANUS BARYCENTER'))
-    #ret.append(sincos(planets, 'sun', 'NEPTUNE BARYCENTER'))
+    ret.append(sincos(planets, 'sun', 'mercury', t))
+    ret.append(sincos(planets, 'sun', 'venus', t))
+    ret.append(sincos(planets, 'sun', 'earth', t))
+    ret.append(sincos(planets, 'sun', 'mars', t))
+    #ret.append(sincos(planets, 'sun', 'JUPITER BARYCENTER', t))
+    #ret.append(sincos(planets, 'sun', 'SATURN BARYCENTER', t))
+    #ret.append(sincos(planets, 'sun', 'URANUS BARYCENTER', t))
+    #ret.append(sincos(planets, 'sun', 'NEPTUNE BARYCENTER', t))
     x = [x[0] for x in ret]
     y = [x[1] for x in ret]
     z = [x[2] for x in ret]
@@ -57,7 +54,9 @@ hosei = 1.5
 ax.set_xlim(-1.0 * hosei, hosei)
 ax.set_ylim(-1.0 * hosei, hosei)
 ax.set_zlim(-1.0 * hosei, hosei)
-x, y, z, r, c = createMap()
+ts = load.timescale()
+t = ts.now()
+x, y, z, r, c = createMap(t)
 scat = ax.scatter(x, y, z, c=c)
 scat.set_sizes([40]*len(x))
 i = 0
@@ -70,9 +69,12 @@ for rr in r:
 def update(frame_number):
     global scat
     scat.remove()
-    x, y, z, r, c = createMap()
+    #ax.remove()
+    ts = load.timescale()
+    t = ts.tt_jd(ts.now().tt+frame_number)
+    x, y, z, r, c = createMap(t)
     scat = ax.scatter(x, y, z, c=c)
-    scat.set_sizes([40]*len(x))
+    scat.set_sizes([36]*len(x))
 
-animation = FuncAnimation(fig, update, interval=2000)
+animation = FuncAnimation(fig, update, interval=100)
 plt.show()
