@@ -1,3 +1,5 @@
+#coding:utf-8
+#https://matplotlib.org/3.1.0/gallery/animation/rain.html
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
