@@ -94,8 +94,8 @@ def createMap(t):
     ret.append(sincos(planets, 'sun', 'venus', t))
     ret.append(sincos(planets, 'sun', 'earth', t))
     ret.append(sincos(planets, 'sun', 'mars', t))
-    ret.append(sincos(planets, 'sun', 'JUPITER BARYCENTER', t))
-    ret.append(sincos(planets, 'sun', 'SATURN BARYCENTER', t))
+    #ret.append(sincos(planets, 'sun', 'JUPITER BARYCENTER', t))
+    #ret.append(sincos(planets, 'sun', 'SATURN BARYCENTER', t))
     #ret.append(sincos(planets, 'sun', 'URANUS BARYCENTER', t))
     #ret.append(sincos(planets, 'sun', 'NEPTUNE BARYCENTER', t))
     x = [x[0] for x in ret]
@@ -106,10 +106,10 @@ def createMap(t):
     c = c[:len(x)]
     return x, y, z, r, c
 
-fig = plt.figure(figsize=(12, 12))
+fig = plt.figure(figsize=(14, 14))
 ax = fig.add_subplot(111, projection='3d')
 #ax.legend()
-hosei = 5
+hosei = 1.3
 ax.set_xlim(-1.0 * hosei, hosei)
 ax.set_ylim(-1.0 * hosei, hosei)
 ax.set_zlim(-1.0 * hosei, hosei)
@@ -119,7 +119,7 @@ x, y, z, r, c = createMap(t)
 scat = ax.scatter(x, y, z, c=c)
 scat.set_sizes([50]*len(x))
 i = 0
-rote=((0,0,0),(0,-0.5,0.9),(0,-0.4,0.9),(0,-0.4,0.9),(0,-0.4,0.9),(0,-0.35,0.9),(0,-0.35,0.9))
+rote=((0,0,0),(0.1,-0.45,0.9),(0,-0.4,0.9),(0,-0.4,0.9),(0.05,-0.37,0.9),(0,-0.35,0.9),(0,-0.35,0.9))
 for rr in r:
     p=Circle((0, 0), rr*1.1, ec=c[i], fill=False)
     ax.add_patch(p)
@@ -136,7 +136,7 @@ def update(frame_number):
     t = ts.tt_jd(ts.now().tt+frame_number)
     x, y, z, r, c = createMap(t)
     scat = ax.scatter(x, y, z, c=c)
-    scat.set_sizes([50]*len(x))
+    scat.set_sizes([60]*len(x))
 
-animation = FuncAnimation(fig, update, interval=100)
+animation = FuncAnimation(fig, update, interval=10)
 plt.show()
