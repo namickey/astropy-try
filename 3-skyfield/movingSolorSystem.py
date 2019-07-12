@@ -31,7 +31,7 @@ def createMap(t):
     ret = [[0.0, 0.0, 0.0, 0.0]]
     ret.append(sincos(planets, 'sun', 'mercury', t))
     ret.append(sincos(planets, 'sun', 'venus', t))
-    #ret.append(sincos(planets, 'sun', 'earth', t))
+    ret.append(sincos(planets, 'sun', 'earth', t))
     #ret.append(sincos(planets, 'sun', 'mars', t))
     #ret.append(sincos(planets, 'sun', 'JUPITER BARYCENTER', t))
     #ret.append(sincos(planets, 'sun', 'SATURN BARYCENTER', t))
@@ -58,17 +58,39 @@ def createCircleData(s):
         [lineData[h][2].append(d) for h, d in enumerate(z)]
     return lineData
 
-# 万有引力定数×惑星の質量(E：地球，M：月)
-GE = 2.975537 * 10**15  * 27  # [km^3*day^-2]
-GM = 3.659916 * 10**13   # [km^3*day^-2]
-G = 1.267*10**8*27.0
-# 人工衛星
+'''
+秒速10km = 日速  864,000km
+秒速20km = 日速1,728,000km
+秒速30km = 日速2,592,000km
+
+秒速10km = 地球直径を12,756.2kmを21.3分で通過する
+秒速20km = 地球直径を12,756.2kmを10.6分で通過する
+秒速30km = 地球直径を12,756.2kmを7.1分で通過する
+
+秒速10km = 太陽直径を1,392,000kmを38.7時間で通過する
+秒速20km = 太陽直径を1,392,000kmを19.3時間で通過する
+秒速30km = 太陽直径を1,392,000kmを12.9時間で通過する
+
+秒速10km = 太陽と地球間を149,000,000.0kmを172.5日で通過する
+秒速20km = 太陽と地球間を149,000,000.0kmを86.2日で通過する
+秒速30km = 太陽と地球間を149,000,000.0kmを57.5日で通過する
+
+秒速10km = 太陽と木星間を778,300,000.0kmを900.8日で通過する
+秒速20km = 太陽と木星間を778,300,000.0kmを450.4日で通過する
+秒速30km = 太陽と木星間を778,300,000.0kmを300.3日で通過する
+'''
+
+
+# 人工衛星 座標
 xs = 1.496*10**8*0.1 # [km]
-ys = 1.496*10**8*0.1
-dx = 100.0
-dy = 0.0
-def fm(xm, rm):
-    return -G*(xm/rm**3)
+ys = 1.496*10**8*0.5
+# 人工衛星 速度 日速
+dx = 0*60*60*24
+dy = 20*60*60*24
+
+def fm(xs, rs):
+    GM = 1.267*(10**14)*60*60*24*27.0 #太陽
+    return -GM*(xs/rs**3)
 
 def moveOnGravity():
     global xs
@@ -78,14 +100,14 @@ def moveOnGravity():
     rs  = np.sqrt(xs**2 + ys**2)
     dx = dx + fm(xs, rs)
     dy = dy + fm(ys, rs)
-    xs += dx
-    ys += dy
+    xs = xs + dx
+    ys = ys + dy
     return ((xs/(1.496*10**8)), (ys/(1.496*10**8)), (0.0))
 
 fig = plt.figure(figsize=(14, 14))
 ax = fig.add_subplot(111, projection='3d')
 #ax.legend()
-hosei = 1.3
+hosei = 1.0
 ax.set_xlim(-1.0 * hosei, hosei)
 ax.set_ylim(-1.0 * hosei, hosei)
 ax.set_zlim(-1.0 * hosei, hosei)
@@ -94,6 +116,8 @@ t = ts.now()
 x, y, z, r, c = createMap(t)
 scat = ax.scatter(x, y, z, c=c)
 scat.set_sizes([50]*len(x))
+xs = x[3]*(1.496*10**8)
+ys = y[3]*(1.496*10**8)
 sate = moveOnGravity()
 scat_sate = ax.scatter(sate[0], sate[1], sate[2], c='red')
 lined = createCircleData(len(x))
@@ -111,8 +135,8 @@ def update(frame_number):
     scat = ax.scatter(x, y, z, c=c)
     scat.set_sizes([60]*len(x))
     sate = moveOnGravity()
-    print(sate)
+    #print(sate)
     scat_sate = ax.scatter(sate[0], sate[1], sate[2], c='red')
 
-animation = FuncAnimation(fig, update, interval=80)
+animation = FuncAnimation(fig, update, interval=300)
 plt.show()
