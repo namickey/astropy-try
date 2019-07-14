@@ -29,11 +29,11 @@ def sincos(planets, p1, p2, t):
 def createMap(t):
     planets = load('de421.bsp')
     ret = [[0.0, 0.0, 0.0, 0.0]]
-    ret.append(sincos(planets, 'sun', 'mercury', t))
-    ret.append(sincos(planets, 'sun', 'venus', t))
+    #ret.append(sincos(planets, 'sun', 'mercury', t))
+    #ret.append(sincos(planets, 'sun', 'venus', t))
     ret.append(sincos(planets, 'sun', 'earth', t))
-    #ret.append(sincos(planets, 'sun', 'mars', t))
-    #ret.append(sincos(planets, 'sun', 'JUPITER BARYCENTER', t))
+    ret.append(sincos(planets, 'sun', 'mars', t))
+    ret.append(sincos(planets, 'sun', 'JUPITER BARYCENTER', t))
     #ret.append(sincos(planets, 'sun', 'SATURN BARYCENTER', t))
     #ret.append(sincos(planets, 'sun', 'URANUS BARYCENTER', t))
     #ret.append(sincos(planets, 'sun', 'NEPTUNE BARYCENTER', t))
@@ -82,19 +82,21 @@ def createCircleData(s):
 
 
 # 人工衛星 座標
-xs = 1.496*10**8*0.1 # [km]
-ys = 1.496*10**8*0.5
+xs = 1.496*10**8*0.0 # [km]
+ys = 1.496*10**8*1.0
+zs = 0.0
 # 人工衛星 速度 日速
-dx = 0*60*60*24
-dy = 20*60*60*24
+dx = -30.2*60*60*24
+dy = 0*60*60*24
 
 def fm(xs, rs):
-    GM = 1.267*(10**14)*60*60*24*27.0 #太陽
+    GM = 4.267*(10**14)*60*60*24*27.0 #太陽
     return -GM*(xs/rs**3)
 
 def moveOnGravity():
     global xs
     global ys
+    global zs
     global dx
     global dy
     rs  = np.sqrt(xs**2 + ys**2)
@@ -102,12 +104,12 @@ def moveOnGravity():
     dy = dy + fm(ys, rs)
     xs = xs + dx
     ys = ys + dy
-    return ((xs/(1.496*10**8)), (ys/(1.496*10**8)), (0.0))
+    return ((xs/(1.496*10**8)), (ys/(1.496*10**8)), (zs/(1.496*10**8)))
 
 fig = plt.figure(figsize=(14, 14))
 ax = fig.add_subplot(111, projection='3d')
 #ax.legend()
-hosei = 1.0
+hosei = 6.0
 ax.set_xlim(-1.0 * hosei, hosei)
 ax.set_ylim(-1.0 * hosei, hosei)
 ax.set_zlim(-1.0 * hosei, hosei)
@@ -116,8 +118,10 @@ t = ts.now()
 x, y, z, r, c = createMap(t)
 scat = ax.scatter(x, y, z, c=c)
 scat.set_sizes([50]*len(x))
-xs = x[3]*(1.496*10**8)
-ys = y[3]*(1.496*10**8)
+pos = 1
+#xs = x[pos]*(1.496*10**8)
+#ys = y[pos]*(1.496*10**8)
+#zs = z[pos]*(1.496*10**8)
 sate = moveOnGravity()
 scat_sate = ax.scatter(sate[0], sate[1], sate[2], c='red')
 lined = createCircleData(len(x))
@@ -138,5 +142,5 @@ def update(frame_number):
     #print(sate)
     scat_sate = ax.scatter(sate[0], sate[1], sate[2], c='red')
 
-animation = FuncAnimation(fig, update, interval=300)
+animation = FuncAnimation(fig, update, interval=50)
 plt.show()
