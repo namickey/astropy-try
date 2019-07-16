@@ -80,40 +80,50 @@ def createCircleData(s):
 秒速30km = 太陽と木星間を778,300,000.0kmを300.3日で通過する
 '''
 
+def initSates():
+    sate_size = 30
+    sates = np.zeros(sate_size, dtype=[('position', float, 3),# 人工衛星 座標 [km]
+                                       ('speed',    float, 3),# 人工衛星 速度 日速
+                                       ('frame_number', int, 1)])
+    for i in range(sate_size):
+        if i < sate_size/2:
+            sates['position'][i] = [1.0, 0.0, 0.0]
+            sates['speed'][i] = [0.0+0.5*i, 26.734+0.5*i, 10.0]
+            sates['frame_number'][i] = 0
+        else:
+            sates['position'][i] = [1.0, 0.0, 0.0]
+            sates['speed'][i] = [0.0+0.5*(i-sate_size/2), 26.734+0.5*(i-sate_size/2), 10.0]
+            sates['frame_number'][i] = 180
+    sates['position'] = sates['position']*1.496*10**8
+    sates['speed'] = sates['speed']*60*60*24
+    return sates
 
-# 人工衛星 座標
-xs = 1.496*10**8*1.0 # [km]
-ys = 1.496*10**8*0.0
-zs = 0.0
-# 人工衛星 速度 日速
-dx = -23.78*60*60*24*0
-dy = 26.734*60*60*24
-dz = 10.0*60*60*24
+sates = initSates()
 
 def fm(xs, rs):
     GM = 3.9859*(10**14)*60*60*24*27.0 #太陽
     return -GM*(xs/rs**3)
 
-def moveOnGravity():
-    global xs
-    global ys
-    global zs
-    global dx
-    global dy
-    global dz
-    rs  = np.sqrt(xs**2 + ys**2 + zs**2)
+def moveOnGravity(sate):
+    xs = sate['position'][0]
+    ys = sate['position'][1]
+    zs = sate['position'][2]
+    dx = sate['speed'][0]
+    dy = sate['speed'][1]
+    dz = sate['speed'][2]
+    rs = np.sqrt(xs**2 + ys**2 + zs**2)
     dx = dx + fm(xs, rs)
     dy = dy + fm(ys, rs)
     dz = dz + fm(zs, rs)
     xs = xs + dx
     ys = ys + dy
     zs = zs + dz
-    return ((xs/(1.496*10**8)), (ys/(1.496*10**8)), (zs/(1.496*10**8)))
+    return ([xs, ys, zs], [dx, dy, dz], sate['frame_number'])
 
 fig = plt.figure(figsize=(14, 14))
 ax = fig.add_subplot(111, projection='3d')
 #ax.legend()
-hosei = 2.0
+hosei = 2.5
 ax.set_xlim(-1.0 * hosei, hosei)
 ax.set_ylim(-1.0 * hosei, hosei)
 ax.set_zlim(-1.0 * hosei, hosei)
@@ -122,12 +132,16 @@ t = ts.now()
 x, y, z, r, c = createMap(t)
 scat = ax.scatter(x, y, z, c=c)
 scat.set_sizes([50]*len(x))
-pos = 1
-#xs = x[pos]*(1.496*10**8)
-#ys = y[pos]*(1.496*10**8)
-#zs = z[pos]*(1.496*10**8)
-sate = moveOnGravity()
-scat_sate = ax.scatter(sate[0], sate[1], sate[2], c='red')
+scat_sates = []
+for i in range(len(sates)):
+    sates[i] = moveOnGravity(sates[i])
+    if i < len(sates)/2:
+        scat_sates.append(ax.scatter(sates['position'][i][0]/(1.496*10**8),
+                                     sates['position'][i][1]/(1.496*10**8),
+                                     sates['position'][i][2]/(1.496*10**8), c='red'))
+    else:
+        scat_sates.append(ax.scatter(0, 0, 0, c='red'))
+
 lined = createCircleData(len(x))
 for h, line in enumerate(lined):
     ax.plot(line[0], line[1], line[2], c=c[h])
@@ -148,18 +162,24 @@ def showLength(sate, x, y, z):
 
 def update(frame_number):
     global scat
-    global scat_sate
     scat.remove()
-    scat_sate.remove()
+    print(frame_number)
+    for scat_sate in scat_sates:
+        scat_sate.remove()
     ts = load.timescale()
     t = ts.tt_jd(ts.now().tt+frame_number)
     x, y, z, r, c = createMap(t)
     scat = ax.scatter(x, y, z, c=c)
     scat.set_sizes([60]*len(x))
-    sate = moveOnGravity()
-    #print(sate)
-    scat_sate = ax.scatter(sate[0], sate[1], sate[2], c='red')
-    showLength(sate, x, y, z)
+    for i in range(len(sates)):
+        if sates[i]['frame_number'] <= frame_number:
+            sates[i] = moveOnGravity(sates[i])
+            scat_sates[i] = ax.scatter(sates['position'][i][0]/(1.496*10**8),
+                                       sates['position'][i][1]/(1.496*10**8),
+                                       sates['position'][i][2]/(1.496*10**8), c='red')
+        else:
+            scat_sates[i] = ax.scatter(0, 0, 0, c='red')
+    showLength(sates['position'][0], x, y, z)
 
-animation = FuncAnimation(fig, update, interval=50)
+animation = FuncAnimation(fig, update, interval=30)
 plt.show()
