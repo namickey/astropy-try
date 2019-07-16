@@ -87,8 +87,8 @@ ys = 1.496*10**8*0.0
 zs = 0.0
 # 人工衛星 速度 日速
 dx = -23.78*60*60*24*0
-dy = 26.73*60*60*24
-dz = 10*60*60*24
+dy = 26.734*60*60*24
+dz = 10.0*60*60*24
 
 def fm(xs, rs):
     GM = 3.9859*(10**14)*60*60*24*27.0 #太陽
@@ -132,6 +132,20 @@ lined = createCircleData(len(x))
 for h, line in enumerate(lined):
     ax.plot(line[0], line[1], line[2], c=c[h])
 
+max_s = 0.0
+min_s = 3.0
+
+def showLength(sate, x, y, z):
+    global max_s
+    global min_s
+    leng = np.sqrt((sate[0]-x[2])**2 + (sate[1]-y[2])**2 + (sate[2]-z[2])**2)
+    if max_s < leng:
+        max_s = leng
+        print('max: ' + str(max_s))
+    if min_s > leng:
+        min_s = leng
+        print('min: ' + str(min_s))
+
 def update(frame_number):
     global scat
     global scat_sate
@@ -145,6 +159,7 @@ def update(frame_number):
     sate = moveOnGravity()
     #print(sate)
     scat_sate = ax.scatter(sate[0], sate[1], sate[2], c='red')
+    showLength(sate, x, y, z)
 
 animation = FuncAnimation(fig, update, interval=50)
 plt.show()
